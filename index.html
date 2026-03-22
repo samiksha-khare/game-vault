@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Game Vault 🎮</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0d0d1a, #1a0d2e, #0d1a1a);
+      min-height: 100vh;
+      color: #fff;
+      padding: 40px 20px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .header h1 {
+      font-size: 3rem;
+      letter-spacing: 4px;
+      background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .header p {
+      color: #888;
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+
+    /* ── Grid ── */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 28px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── Card ── */
+    .game-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 32px 28px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      border-radius: 20px 20px 0 0;
+    }
+
+    .game-card:hover {
+      transform: translateY(-6px);
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* ── Card color themes ── */
+    .card-india::before {
+      background: linear-gradient(90deg, #B22234 33.3%, #ffffff 33.3% 66.6%, #3C3B6E 66.6%);
+    }
+    .card-india:hover { box-shadow: 0 12px 40px rgba(178, 34, 52, 0.2); }
+
+    .card-monument::before {
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+    }
+    .card-monument:hover { box-shadow: 0 12px 40px rgba(247, 151, 30, 0.2); }
+
+    /* ── Card contents ── */
+    .card-icon {
+      font-size: 3rem;
+      line-height: 1;
+    }
+
+    .card-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .card-india .card-title {
+      background: linear-gradient(90deg, #B22234, #ffffff, #3C3B6E);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .card-monument .card-title {
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .card-description {
+      color: #aaa;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .tag {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      color: #ccc;
+    }
+
+    .card-play {
+      margin-top: auto;
+      align-self: flex-start;
+      padding: 10px 24px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .card-play:hover { opacity: 0.85; }
+
+    .card-india .card-play {
+      background: linear-gradient(90deg, #B22234, #e63946);
+      color: #fff;
+    }
+
+    .card-monument .card-play {
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      color: #1a0d00;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      color: #444;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 480px) {
+      .header h1 { font-size: 2rem; }
+      .game-card { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🎮 GAME VAULT</h1>
+    <p>Choose a game and test your knowledge</p>
+  </div>
+
+  <div class="games-grid">
+
+    <a class="game-card card-india" href="usa-city-quest/index.html">
+      <div class="card-icon">🇺🇸</div>
+      <div class="card-title">USA City Quest</div>
+      <div class="card-description">
+        Guess 20 famous American cities from progressive clues. Earn points by solving each city with fewer hints.
+      </div>
+      <div class="card-tags">
+        <span class="tag">20 Cities</span>
+        <span class="tag">Geography</span>
+        <span class="tag">Multiplayer Scores</span>
+      </div>
+      <button class="card-play">Play Now →</button>
+    </a>
+
+    <a class="game-card card-monument" href="monument-quest/index.html">
+      <div class="card-icon">🏛️</div>
+      <div class="card-title">Monument Quest</div>
+      <div class="card-description">
+        Identify 20 world-famous monuments and heritage sites from cryptic clues. How many can you name?
+      </div>
+      <div class="card-tags">
+        <span class="tag">20 Monuments</span>
+        <span class="tag">World Heritage</span>
+        <span class="tag">Quick Play</span>
+      </div>
+      <button class="card-play">Play Now →</button>
+    </a>
+
+  </div>
+
+  <div class="footer">game-vault &nbsp;·&nbsp; pick a game, start exploring</div>
+
+</body>
+</html>

@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>USA City Quest 🇺🇸</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0d1a, #0d0a1f, #0a0d1a);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      padding: 20px;
+    }
+
+    /* ── Decorative top band ── */
+    .us-band {
+      width: 100%;
+      max-width: 720px;
+      height: 6px;
+      background: linear-gradient(90deg, #B22234 33.3%, #ffffff 33.3% 66.6%, #3C3B6E 66.6%);
+      border-radius: 99px;
+      margin-bottom: 22px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #B22234, #ffffff, #3C3B6E);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p { color: #aaa; margin-top: 6px; font-size: 0.92rem; }
+
+    /* ── Stats ── */
+    .stats {
+      display: flex;
+      gap: 18px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stat-box {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 10px 20px;
+      text-align: center;
+      min-width: 88px;
+    }
+    .stat-box .label { font-size: 0.68rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-box .value { font-size: 1.45rem; font-weight: 700; color: #e63946; }
+
+    /* ── Card ── */
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 22px;
+      padding: 30px;
+      width: 100%;
+      max-width: 700px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+
+    /* ── Progress ── */
+    .progress-wrap { margin-bottom: 20px; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #B22234, #e63946);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── State badge ── */
+    .badge {
+      display: inline-block;
+      background: rgba(178,34,52,0.12);
+      border: 1px solid rgba(178,34,52,0.35);
+      color: #e63946;
+      font-size: 0.72rem;
+      padding: 3px 12px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ── Clue section ── */
+    .clue-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .clue-title {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #e63946;
+      font-weight: 600;
+    }
+    .clue-counter { font-size: 0.74rem; color: #aaa; }
+
+    .clues-list { list-style: none; margin-bottom: 16px; }
+    .clues-list li {
+      background: rgba(255,255,255,0.04);
+      border-left: 3px solid #e63946;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      font-size: 0.97rem;
+      line-height: 1.55;
+      animation: fadeIn 0.4s ease;
+    }
+    .clues-list li.locked {
+      border-left-color: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.22);
+      font-style: italic;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Hint button ── */
+    .hint-btn {
+      background: transparent;
+      border: 1px solid rgba(178,34,52,0.45);
+      color: #e63946;
+      padding: 7px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      transition: background 0.2s;
+      margin-bottom: 18px;
+    }
+    .hint-btn:hover:not(:disabled) { background: rgba(178,34,52,0.12); }
+    .hint-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* ── Input row ── */
+    .input-row { display: flex; gap: 10px; }
+    #answerInput {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    #answerInput::placeholder { color: rgba(255,255,255,0.3); }
+    #answerInput:focus { border-color: #e63946; }
+
+    .submit-btn {
+      padding: 12px 22px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #B22234, #e63946);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .submit-btn:hover { transform: scale(1.04); }
+    .submit-btn:active { transform: scale(0.97); }
+
+    /* ── Feedback ── */
+    .feedback {
+      margin-top: 14px;
+      min-height: 26px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    .feedback.correct { color: #4ade80; }
+    .feedback.wrong   { color: #f87171; }
+    .feedback.reveal  { color: #facc15; }
+    .feedback.hint    { color: #94a3b8; }
+
+    /* ── Lives ── */
+    .lives { font-size: 1.35rem; letter-spacing: 4px; }
+
+    /* ── Overlays ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+    .overlay.active { display: flex; }
+
+    .overlay-box {
+      background: linear-gradient(135deg, #0d0a1f, #1a0d2e);
+      border: 1px solid rgba(178,34,52,0.25);
+      border-radius: 24px;
+      padding: 46px 38px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.65);
+      animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .overlay-box h2 { font-size: 1.9rem; margin-bottom: 10px; }
+    .overlay-box p  { color: #bbb; margin-bottom: 22px; line-height: 1.65; font-size: 0.93rem; }
+    .big-score {
+      font-size: 3.4rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #B22234, #e63946);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .play-btn {
+      padding: 13px 34px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #B22234, #e63946);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .play-btn:hover { transform: scale(1.05); }
+
+    /* ── Rank badge on end screen ── */
+    .rank-badge {
+      font-size: 3rem;
+      margin-bottom: 6px;
+    }
+
+    /* ── Home button ── */
+    .home-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #ccc;
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      z-index: 50;
+    }
+    .home-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* ── Confirm modal ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+    .confirm-overlay.active { display: flex; }
+    .confirm-box {
+      background: linear-gradient(135deg, #0d0a1f, #1a0d2e);
+      border: 1px solid rgba(178,34,52,0.3);
+      border-radius: 20px;
+      padding: 36px 32px;
+      text-align: center;
+      max-width: 340px;
+      width: 90%;
+      animation: popIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    .confirm-box p { color: #ccc; margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5; }
+    .confirm-btns { display: flex; gap: 12px; justify-content: center; }
+    .confirm-yes {
+      padding: 10px 28px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #B22234, #e63946);
+      color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .confirm-yes:hover { transform: scale(1.04); }
+    .confirm-no {
+      padding: 10px 28px; border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px; background: transparent;
+      color: #ccc; font-size: 0.95rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .confirm-no:hover { background: rgba(255,255,255,0.08); }
+
+    @media (max-width: 480px) {
+      .header h1 { font-size: 1.7rem; }
+      .card { padding: 20px 16px; }
+      .input-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Home button -->
+  <button class="home-btn" onclick="confirmGoHome()">🏠 Home</button>
+
+  <!-- Confirm modal -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <div style="font-size:2rem;margin-bottom:12px">🏠</div>
+      <p>Are you sure you want to go back to the home page?<br><strong style="color:#fff">Your progress will be lost.</strong></p>
+      <div class="confirm-btns">
+        <button class="confirm-yes" onclick="goHome()">Yes, go home</button>
+        <button class="confirm-no"  onclick="closeConfirm()">No, keep playing</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Welcome -->
+  <div class="overlay active" id="welcomeScreen">
+    <div class="overlay-box">
+      <div style="font-size:2.8rem;margin-bottom:8px">🇺🇸</div>
+      <h2>USA City Quest</h2>
+      <p>
+        Each round gives you clues about a famous American city — <strong>without naming it</strong>.<br><br>
+        Unlock clues one by one. The earlier you guess, the more points you earn!<br><br>
+        ❤️ You have <strong>3 lives for the whole game</strong>. Use them wisely!
+      </p>
+      <button class="play-btn" onclick="startGame()">Start Playing 🗺️</button>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div class="overlay" id="gameOverScreen">
+    <div class="overlay-box">
+      <div style="font-size:3rem;margin-bottom:8px">😵</div>
+      <h2 style="color:#f87171;">Game Over!</h2>
+      <p id="gameOverMsg">You ran out of lives.</p>
+      <div class="big-score" id="gameOverScore">0</div>
+      <p style="color:#aaa;margin-bottom:24px;font-size:0.88rem;">points scored before game ended</p>
+      <button class="play-btn" onclick="restartGame()">Play Again 🔁</button>
+    </div>
+  </div>
+
+  <!-- End Screen -->
+  <div class="overlay" id="endScreen">
+    <div class="overlay-box">
+      <div class="rank-badge" id="rankEmoji">🏆</div>
+      <h2 id="endTitle">Quiz Complete!</h2>
+      <div class="big-score" id="finalScore">0</div>
+      <p id="endMessage"></p>
+      <button class="play-btn" onclick="restartGame()">Play Again 🔁</button>
+    </div>
+  </div>
+
+  <!-- US flag band -->
+  <div class="us-band"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🇺🇸 USA City Quest</h1>
+    <p>Read the clues. Name the city.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-box">
+      <div class="label">Score</div>
+      <div class="value" id="scoreDisplay">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Lives</div>
+      <div class="value lives" id="livesDisplay">❤️❤️❤️</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">City</div>
+      <div class="value" id="qNumDisplay">1 / 20</div>
+    </div>
+  </div>
+
+  <!-- Game Card -->
+  <div class="card">
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span id="progressLabel">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="clue-header">
+      <span class="clue-title">🔍 Clues</span>
+      <span class="clue-counter" id="clueCounter">Clue 1 of 4</span>
+    </div>
+
+    <ul class="clues-list" id="cluesList"></ul>
+
+    <button class="hint-btn" id="hintBtn" onclick="revealNextClue()">
+      💡 Reveal Next Clue (−10 pts)
+    </button>
+
+    <div class="input-row">
+      <input
+        type="text"
+        id="answerInput"
+        placeholder="Type the city name…"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') checkAnswer()"
+      />
+      <button class="submit-btn" onclick="checkAnswer()">Guess →</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // DATA — 20 famous USA cities
+    // ─────────────────────────────────────────────
+    const cities = [
+      {
+        name: "New York City",
+        aliases: ["new york city", "new york", "nyc", "new york, ny"],
+        category: "New York",
+        clues: [
+          "This city is home to the world's largest stock exchange by market capitalization and its skyline is arguably the most recognizable on earth.",
+          "A 93-metre copper statue — a gift from France — stands on a small island in its harbor and has welcomed arrivals by sea since 1886.",
+          "Its subway system runs 24 hours a day, 365 days a year — the only major metro in the world that never fully closes.",
+          "Originally called New Amsterdam by Dutch settlers in 1626, it became the first capital of the United States before the seat of government was relocated."
+        ]
+      },
+      {
+        name: "Los Angeles",
+        aliases: ["los angeles", "la", "l.a."],
+        category: "California",
+        clues: [
+          "This city's studios are responsible for over 40% of global film and television production — more entertainment content than anywhere else on earth.",
+          "A nine-letter hillside sign installed in 1923 began as a real estate advertisement before becoming one of the most photographed landmarks in the world.",
+          "It sits atop one of the world's most seismically active fault lines and experiences thousands of small earthquakes every year.",
+          "The second-largest city in the USAA, it hosted the Summer Olympics in 1932 and 1984 and is set to host again in 2028."
+        ]
+      },
+      {
+        name: "Chicago",
+        aliases: ["chicago"],
+        category: "Illinois",
+        clues: [
+          "After a catastrophic fire destroyed most of the city in 1871, architects here invented the steel-frame skyscraper and effectively created modern urban architecture.",
+          "Its nickname refers to biting winds sweeping off a vast inland lake — though historians argue the name actually came from its boastful politicians.",
+          "A massive silver bean-shaped sculpture in its downtown park reflects a distorted panorama of the entire skyline and has become one of the most photographed artworks in the world.",
+          "The third-largest USA city, on the southwestern shore of Lake Michigan, it is the birthplace of the electric blues and home to the world's first elevated rail loop."
+        ]
+      },
+      {
+        name: "Houston",
+        aliases: ["houston"],
+        category: "Texas",
+        clues: [
+          "The first word spoken from the Moon's surface on July 20, 1969 was addressed to this city: 'Houston, Tranquility Base here. The Eagle has landed.'",
+          "This city hosts the world's largest medical complex — a 1,000-acre campus with over 60 institutions treating more than 10 million patients every year.",
+          "It is the only major USA city without zoning laws, meaning a church, a strip club, and a chemical plant can legally stand side by side.",
+          "The fourth-largest city in the USA and the most populous in Texas, it sits near the Gulf of Mexico and serves as the global capital of the petroleum and energy industry."
+        ]
+      },
+      {
+        name: "Las Vegas",
+        aliases: ["las vegas", "vegas"],
+        category: "Nevada",
+        clues: [
+          "A single strip of hotels and casinos here generates more gambling revenue annually than any other place on earth.",
+          "Four of the ten largest hotels in the world by room count are located here, and the city receives more than 40 million tourists per year.",
+          "The city's famous slogan — coined by an advertising agency in 2003 — has become one of the most recognized taglines in marketing history.",
+          "Built in the Nevada desert where temperatures exceed 45°C, it exploded from a railroad stop into a neon megalopolis after Nevada legalized gambling in 1931 when the rest of America had banned it."
+        ]
+      },
+      {
+        name: "New Orleans",
+        aliases: ["new orleans", "nola"],
+        category: "Louisiana",
+        clues: [
+          "This city gave birth to jazz music in the early 20th century in its entertainment district, where African American, Creole, and European musical traditions fused into something entirely new.",
+          "Every February it hosts one of the world's largest street festivals, drawing over a million people into its French Quarter for parades, costumes, and round-the-clock music.",
+          "Most of the city sits below sea level, protected by levees — a vulnerability that became catastrophic in 2005 when a Category 4 hurricane caused the levees to fail.",
+          "Located at the mouth of the Mississippi River in Louisiana, its French Quarter is the oldest continuously inhabited European settlement in the USAA, with cast-iron balconies and a cuisine unlike anywhere else."
+        ]
+      },
+      {
+        name: "San Francisco",
+        aliases: ["san francisco", "sf", "san fran"],
+        category: "California",
+        clues: [
+          "A suspension bridge painted in 'International Orange' spans the entrance to its bay — completed in 1937, it is the most photographed bridge in the world.",
+          "Its cable car system, installed in 1873, is the only manually operated one still in regular public use anywhere in the world and is a National Historic Landmark.",
+          "In 1967, a 'Summer of Love' centered in this city's Haight-Ashbury neighborhood drew 100,000 young people and defined a generation's politics, music, and counterculture.",
+          "Located on a peninsula in Northern California, it was nearly annihilated by a massive earthquake and fire in 1906, then rebuilt to become the financial and tech hub of the American West."
+        ]
+      },
+      {
+        name: "Miami",
+        aliases: ["miami"],
+        category: "Florida",
+        clues: [
+          "This city's South Beach neighborhood contains the world's largest concentration of Art Deco architecture — over 800 preserved buildings from the 1920s–40s in pastel colors.",
+          "More than 70% of all USA trade with Latin America passes through this city's port, making it the unofficial financial capital of the Americas.",
+          "Spanish is spoken by more than half the population, making it the only major USA city where English is not the dominant language at street level.",
+          "At the southern tip of Florida, it has the warmest winter climate of any major USA city and sits just a few feet above sea level — making it among the most at-risk cities in the world from rising seas."
+        ]
+      },
+      {
+        name: "Washington",
+        aliases: ["washington", "washington dc", "washington d.c.", "dc", "d.c."],
+        category: "District of Columbia",
+        clues: [
+          "This city was purpose-built as a capital and laid out on a grid with diagonal avenues named after USA states — designed by a French engineer on land carved from two existing states.",
+          "Its 19 Smithsonian museums and galleries — containing 157 million objects — are all free to the public, forming the largest museum complex in the world.",
+          "A 169-metre obelisk at its center, completed in 1884, was briefly the tallest structure in the world and remains the tallest stone structure on earth.",
+          "The capital of the United States, it is not part of any state — it occupies a federal district on the Potomac River between Virginia and Maryland, established in 1790."
+        ]
+      },
+      {
+        name: "Boston",
+        aliases: ["boston"],
+        category: "Massachusetts",
+        clues: [
+          "In 1773, colonists disguised as Native Americans dumped 342 chests of British tea into this city's harbor — an act of defiance that helped ignite the American Revolution.",
+          "It is home to the oldest continuously operating subway in the United States, opened in 1897, and the country's oldest public park, established in 1634.",
+          "The world's oldest annual marathon has been run from the suburbs into this city every Patriots' Day since 1897.",
+          "Capital of Massachusetts and unofficial capital of New England, its neighboring suburbs are home to Harvard and MIT — the world's most concentrated cluster of research universities."
+        ]
+      },
+      {
+        name: "Seattle",
+        aliases: ["seattle"],
+        category: "Washington",
+        clues: [
+          "A 184-metre tower with a rotating restaurant at the top was built for a 1962 World's Fair and became the city's defining symbol of futuristic ambition.",
+          "The world's largest software company and the world's largest online retailer were both founded here — no other city has produced two of the world's five most valuable companies.",
+          "A century-old public market here is famous for fishmongers who throw whole fish through the air — a performance that has been drawing crowds since the 1930s.",
+          "In the Pacific Northwest of Washington State, it receives more rainy days than almost any other major USA city, sits between a bay and a lake, and has a dormant volcano visible on clear days to the southeast."
+        ]
+      },
+      {
+        name: "Nashville",
+        aliases: ["nashville"],
+        category: "Tennessee",
+        clues: [
+          "This city is home to the world's longest-running radio show — broadcast live every Saturday night since 1927 — which launched the careers of virtually every major figure in American country music.",
+          "Over 180 live music venues operate here, and the famous strip of honky-tonk bars along its main street has been called the 'Broadway of country music.'",
+          "A full-scale replica of the ancient Parthenon — the only one in the world — stands in a city park, built for a centennial exposition in 1897.",
+          "Capital of Tennessee and known as 'Music City,' it has become one of the fastest-growing cities in the USAA and is home to more than 30 colleges and universities."
+        ]
+      },
+      {
+        name: "Philadelphia",
+        aliases: ["philadelphia", "philly"],
+        category: "Pennsylvania",
+        clues: [
+          "The United States Declaration of Independence was signed in this city in 1776, and it served as the nation's capital for a decade before Washington D.C. was constructed.",
+          "A cracked bell that became a global symbol of American freedom was first hung here in 1753 — it cracked on its very first ring and has been a cultural icon ever since.",
+          "A sandwich of thinly sliced beef and melted cheese in a long roll was invented here and is so fiercely associated with this city that locals argue over the only 'authentic' version.",
+          "Pennsylvania's largest city, the fifth-largest in the USA, sits at the junction of the Delaware and Schuylkill rivers and its name is Greek for 'City of Brotherly Love.'"
+        ]
+      },
+      {
+        name: "Denver",
+        aliases: ["denver"],
+        category: "Colorado",
+        clues: [
+          "This city sits at exactly 5,280 feet above sea level — precisely one mile high — with a marker on its state capitol steps to mark the exact elevation.",
+          "It is the closest large city to the Rocky Mountains, and on a clear day residents can see over 200 named peaks from downtown.",
+          "In 2012, it became one of the first cities in the USA to fully legalize recreational marijuana, launching an industry that now generates billions annually.",
+          "Capital of Colorado and gateway to the American West, it grew from a gold rush settlement in 1858 and is home to one of the NFL's most storied franchises."
+        ]
+      },
+      {
+        name: "Austin",
+        aliases: ["austin"],
+        category: "Texas",
+        clues: [
+          "Every March, this city hosts the world's largest combined music, film, and technology festival — a sprawling event that takes over nearly every venue in the city for two weeks.",
+          "Its unofficial civic motto is 'Keep It Weird' — a grassroots slogan that became a cultural identity and a rallying cry against rapid, homogenizing growth.",
+          "More than 1.5 million Mexican free-tailed bats live under a bridge in its downtown — the largest urban bat colony in North America — and their nightly emergence at dusk draws tourist crowds.",
+          "Capital of Texas and one of the fastest-growing cities in the USAA, it is home to the University of Texas and has attracted a wave of major tech companies relocating their headquarters here."
+        ]
+      },
+      {
+        name: "Atlanta",
+        aliases: ["atlanta"],
+        category: "Georgia",
+        clues: [
+          "During the Civil War, this city was burned to the ground by Union General Sherman in 1864 during his 'March to the Sea' — one of history's most strategically devastating acts of deliberate destruction.",
+          "The world's most consumed carbonated beverage was invented by a pharmacist here in 1886 and is still produced by a company headquartered in this city.",
+          "The world's busiest airport by passenger count is located here, handling over 100 million passengers a year — more than any other airport on earth.",
+          "Capital of Georgia and unofficial capital of the American South, it was the birthplace of Martin Luther King Jr. and is home to the largest concentration of historically Black colleges in the USAA."
+        ]
+      },
+      {
+        name: "Detroit",
+        aliases: ["detroit"],
+        category: "Michigan",
+        clues: [
+          "Three of the four largest American automobile manufacturers were founded in or maintain their global headquarters in this city — a dominance it has held for over a century.",
+          "In the 1960s and 70s, a record label here transformed rhythm and blues into a polished pop sound that conquered global charts — launching Stevie Wonder, Diana Ross, and Marvin Gaye.",
+          "This city filed the largest municipal bankruptcy in USA history in 2013, owing nearly $20 billion in debts accumulated over decades of population decline.",
+          "Sitting on the Detroit River, which forms the USA–Canada border, it is one of the few places in the continental USA where you face south and see another country."
+        ]
+      },
+      {
+        name: "Memphis",
+        aliases: ["memphis"],
+        category: "Tennessee",
+        clues: [
+          "A 23-room mansion on the outskirts of this city — home to the most famous recording artist in American history — is the second-most visited private home in the USAA, after the White House.",
+          "A single street here produced some of the most influential recordings of the 20th century, with artists who defined rock and roll, soul, and the blues all cutting tracks in its small studios.",
+          "A civil rights leader was assassinated on the balcony of a downtown motel here on April 4, 1968 — a moment that sent shockwaves through America and the world.",
+          "On the Mississippi River in western Tennessee, it is widely regarded as the birthplace of blues and rock and roll, and is home to the world's largest overnight package delivery company."
+        ]
+      },
+      {
+        name: "Portland",
+        aliases: ["portland"],
+        category: "Oregon",
+        clues: [
+          "This city has more craft breweries per capita than any other major USA city — a beer culture so deeply embedded that it earned the nickname 'Beervana.'",
+          "Its famous independent bookstore — the largest new bookstore in the world by square footage — occupies an entire city block and stocks over a million titles.",
+          "Roses grow so prolifically here that the city maintains a rose test garden with over 10,000 bushes that has been open to the public since 1917.",
+          "In the Pacific Northwest of Oregon, at the confluence of the Columbia and Willamette rivers, it earned the nickname 'Stump Town' from its lumber industry heritage."
+        ]
+      },
+      {
+        name: "Honolulu",
+        aliases: ["honolulu"],
+        category: "Hawaii",
+        clues: [
+          "This city is the only USA state capital located on an island and the only one outside the continental United States — separated from the mainland by over 3,800 kilometres of open Pacific.",
+          "On December 7, 1941, the naval base here was struck in a surprise attack that killed 2,403 Americans and brought the United States into World War II the very next day.",
+          "Its most famous beach — a crescent of white sand backed by a volcanic crater — is considered the birthplace of modern surf culture and draws 5 million tourists annually.",
+          "Capital of Hawaii and the southernmost state capital in the USA, it contains the only royal palace in America — the Iolani Palace, where the last Hawaiian monarchs reigned before annexation."
+        ]
+      }
+    ];
+
+    // ─────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────
+    const POINTS = [100, 70, 40, 20];
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function normalize(str) {
+      return str.toLowerCase().trim().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ');
+    }
+
+    // ─────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────
+    let state = {
+      cities: [],
+      current: 0,
+      clueIndex: 0,
+      score: 0,
+      lives: 3,
+      wrongThisRound: 0,
+    };
+
+    // ─────────────────────────────────────────────
+    // GAME FLOW
+    // ─────────────────────────────────────────────
+    function startGame() {
+      state.cities  = shuffle(cities);
+      state.current = 0;
+      state.score   = 0;
+      state.lives   = 3;
+      document.getElementById('welcomeScreen').classList.remove('active');
+      loadCity();
+    }
+
+    function restartGame() {
+      document.getElementById('endScreen').classList.remove('active');
+      document.getElementById('gameOverScreen').classList.remove('active');
+      startGame();
+    }
+
+    function showGameOver() {
+      const c = state.cities[state.current];
+      document.getElementById('gameOverScore').textContent = state.score;
+      document.getElementById('gameOverMsg').textContent =
+        `You ran out of lives on "${c.name}". Better luck next time!`;
+      document.getElementById('gameOverScreen').classList.add('active');
+    }
+
+    function loadCity() {
+      const c = state.cities[state.current];
+      state.clueIndex      = 0;
+      state.wrongThisRound = 0;
+
+      renderClues();
+      updateHintBtn();
+      updateStats();
+
+      const input = document.getElementById('answerInput');
+      input.value    = '';
+      input.disabled = false;
+      setFeedback('', '');
+      input.focus();
+    }
+
+    function nextCity() {
+      state.current++;
+      if (state.current >= state.cities.length) {
+        showEnd();
+        return;
+      }
+      loadCity();
+    }
+
+    // ─────────────────────────────────────────────
+    // CLUES
+    // ─────────────────────────────────────────────
+    function renderClues() {
+      const c    = state.cities[state.current];
+      const list = document.getElementById('cluesList');
+      list.innerHTML = '';
+      c.clues.forEach((clue, i) => {
+        const li = document.createElement('li');
+        if (i <= state.clueIndex) {
+          li.textContent = `${i + 1}. ${clue}`;
+        } else {
+          li.textContent = `Clue ${i + 1} — locked`;
+          li.classList.add('locked');
+        }
+        list.appendChild(li);
+      });
+      document.getElementById('clueCounter').textContent =
+        `Clue ${state.clueIndex + 1} of ${c.clues.length}`;
+    }
+
+    function revealNextClue() {
+      const c = state.cities[state.current];
+      if (state.clueIndex >= c.clues.length - 1) return;
+      state.clueIndex++;
+      state.score = Math.max(0, state.score - 10);
+      renderClues();
+      updateHintBtn();
+      updateStats();
+      setFeedback('Clue unlocked! (−10 pts)', 'hint');
+    }
+
+    function updateHintBtn() {
+      const c   = state.cities[state.current];
+      const btn = document.getElementById('hintBtn');
+      const all = state.clueIndex >= c.clues.length - 1;
+      btn.disabled    = all;
+      btn.textContent = all ? '💡 All clues revealed' : '💡 Reveal Next Clue (−10 pts)';
+    }
+
+    // ─────────────────────────────────────────────
+    // ANSWER CHECK
+    // ─────────────────────────────────────────────
+    function checkAnswer() {
+      const input  = document.getElementById('answerInput');
+      const answer = normalize(input.value);
+      if (!answer) return;
+
+      const c       = state.cities[state.current];
+      const correct = c.aliases.some(a => normalize(a) === answer);
+
+      if (correct) {
+        const pts = POINTS[Math.min(state.clueIndex, POINTS.length - 1)];
+        state.score += pts;
+        updateStats();
+        setFeedback(`✅ Correct! +${pts} points — it's ${c.name}!`, 'correct');
+        input.disabled = true;
+        setTimeout(nextCity, 1800);
+      } else {
+        state.lives--;
+        state.wrongThisRound++;
+        updateStats();
+
+        if (state.lives === 0) {
+          setFeedback(`😵 Out of lives! The answer was: ${c.name}`, 'reveal');
+          input.disabled = true;
+          setTimeout(showGameOver, 1400);
+        } else {
+          setFeedback(
+            `❌ Wrong! ${state.lives} ${state.lives === 1 ? 'life' : 'lives'} left. Try again.`,
+            'wrong'
+          );
+          input.value = '';
+
+          if (state.wrongThisRound >= 2 && state.clueIndex < c.clues.length - 1) {
+            state.clueIndex++;
+            state.wrongThisRound = 0;
+            renderClues();
+            updateHintBtn();
+          }
+        }
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // END SCREEN
+    // ─────────────────────────────────────────────
+    function showEnd() {
+      const max = POINTS[0] * cities.length;
+      const pct = Math.round((state.score / max) * 100);
+
+      const ranks = [
+        { min: 85, emoji: '🦅', title: 'American Expert!',    msg: 'Incredible! You know the USA inside out.' },
+        { min: 65, emoji: '🗺️', title: 'Coast to Coaster!',   msg: 'Great knowledge! A few cities stumped you, but most didn\'t.' },
+        { min: 40, emoji: '🧭', title: 'Budding Explorer!',   msg: 'A decent start! Keep exploring the map of America.' },
+        { min: 0,  emoji: '🌱', title: 'Learning the Map!',   msg: 'Every journey begins somewhere. Try again and improve!' },
+      ];
+
+      const rank = ranks.find(r => pct >= r.min);
+      document.getElementById('rankEmoji').textContent  = rank.emoji;
+      document.getElementById('endTitle').textContent   = rank.title;
+      document.getElementById('finalScore').textContent = state.score;
+      document.getElementById('endMessage').textContent =
+        `${rank.msg}\n\nYou scored ${state.score} out of a possible ${max} points (${pct}%).`;
+
+      document.getElementById('endScreen').classList.add('active');
+    }
+
+    // ─────────────────────────────────────────────
+    // UI HELPERS
+    // ─────────────────────────────────────────────
+    function updateStats() {
+      document.getElementById('scoreDisplay').textContent = state.score;
+      document.getElementById('livesDisplay').textContent =
+        '❤️'.repeat(state.lives) + '🖤'.repeat(3 - state.lives);
+      const total = state.cities.length;
+      document.getElementById('qNumDisplay').textContent = `${state.current + 1} / ${total}`;
+      const pct = Math.round((state.current / total) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent = pct + '%';
+    }
+
+    function setFeedback(msg, type) {
+      const el    = document.getElementById('feedback');
+      el.textContent = msg;
+      el.className   = 'feedback ' + type;
+    }
+
+    // ─────────────────────────────────────────────
+    // HOME NAVIGATION
+    // ─────────────────────────────────────────────
+    function confirmGoHome() {
+      document.getElementById('confirmOverlay').classList.add('active');
+    }
+    function closeConfirm() {
+      document.getElementById('confirmOverlay').classList.remove('active');
+    }
+    function goHome() {
+      window.location.href = '../index.html';
+    }
+  </script>
+</body>
+</html>

@@ -267,6 +267,62 @@
     }
 
     /* ── Responsive ── */
+    /* ── Home button ── */
+    .home-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #ccc;
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      z-index: 50;
+    }
+    .home-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* ── Confirm modal ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+    .confirm-overlay.active { display: flex; }
+    .confirm-box {
+      background: linear-gradient(135deg, #1a1a2e, #302b63);
+      border: 1px solid rgba(247,151,30,0.3);
+      border-radius: 20px;
+      padding: 36px 32px;
+      text-align: center;
+      max-width: 340px;
+      width: 90%;
+      animation: popIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    .confirm-box p { color: #ccc; margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5; }
+    .confirm-btns { display: flex; gap: 12px; justify-content: center; }
+    .confirm-yes {
+      padding: 10px 28px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+      color: #1a1a2e; font-weight: 700; font-size: 0.95rem; cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .confirm-yes:hover { transform: scale(1.04); }
+    .confirm-no {
+      padding: 10px 28px; border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px; background: transparent;
+      color: #ccc; font-size: 0.95rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .confirm-no:hover { background: rgba(255,255,255,0.08); }
+
     @media (max-width: 480px) {
       .header h1 { font-size: 1.8rem; }
       .card { padding: 22px 18px; }
@@ -276,15 +332,42 @@
 </head>
 <body>
 
+  <!-- Home button -->
+  <button class="home-btn" onclick="confirmGoHome()">🏠 Home</button>
+
+  <!-- Confirm modal -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <div style="font-size:2rem;margin-bottom:12px">🏠</div>
+      <p>Are you sure you want to go back to the home page?<br><strong style="color:#fff">Your progress will be lost.</strong></p>
+      <div class="confirm-btns">
+        <button class="confirm-yes" onclick="goHome()">Yes, go home</button>
+        <button class="confirm-no"  onclick="closeConfirm()">No, keep playing</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Welcome Screen -->
   <div class="overlay active" id="welcomeScreen">
     <div class="overlay-box">
       <h2>🏛️ Monument Quest</h2>
       <p>Clues describe a famous world heritage site or monument — <strong>without revealing its name</strong>.<br><br>
          Unlock clues one by one. The sooner you guess, the more points you earn!<br><br>
-         ❤️ You have <strong>3 lives</strong> per monument. Use them wisely.
+         ❤️ You have <strong>3 lives for the whole game</strong>. Use them wisely!
       </p>
       <button class="play-btn" onclick="startGame()">Start Exploring →</button>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div class="overlay" id="gameOverScreen">
+    <div class="overlay-box">
+      <div style="font-size:3rem;margin-bottom:8px">😵</div>
+      <h2 style="color:#f87171;">Game Over!</h2>
+      <p id="gameOverMsg">You ran out of lives.</p>
+      <div class="big-score" id="gameOverScore">0</div>
+      <p style="color:#aaa;margin-bottom:24px;font-size:0.88rem;">points scored before game ended</p>
+      <button class="play-btn" onclick="restartGame()">Play Again 🔁</button>
     </div>
   </div>
 
@@ -625,6 +708,7 @@
 
     function restartGame() {
       document.getElementById('endScreen').classList.remove('active');
+      document.getElementById('gameOverScreen').classList.remove('active');
       startGame();
     }
 
@@ -635,7 +719,6 @@
       const m = state.monuments[state.current];
       state.clueIndex      = 0;
       state.wrongThisRound = 0;
-      state.lives          = 3;
 
       // Update stats
       updateStats();
@@ -727,9 +810,9 @@
         updateStats();
 
         if (state.lives === 0) {
-          setFeedback(`💀 No lives left! The answer was: "${m.name}"`, 'reveal');
+          setFeedback(`😵 No lives left! The answer was: "${m.name}"`, 'reveal');
           document.getElementById('answerInput').disabled = true;
-          setTimeout(nextMonument, 2500);
+          setTimeout(showGameOver, 1400);
         } else {
           setFeedback(`❌ Not quite! ${state.lives} ${state.lives === 1 ? 'life' : 'lives'} remaining. Try again.`, 'wrong');
           document.getElementById('answerInput').value = '';
@@ -742,6 +825,17 @@
           }
         }
       }
+    }
+
+    // ─────────────────────────────────────────────
+    // GAME OVER
+    // ─────────────────────────────────────────────
+    function showGameOver() {
+      const m = state.monuments[state.current];
+      document.getElementById('gameOverScore').textContent = state.score;
+      document.getElementById('gameOverMsg').textContent =
+        `You ran out of lives on "${m.name}". Better luck next time!`;
+      document.getElementById('gameOverScreen').classList.add('active');
     }
 
     // ─────────────────────────────────────────────
@@ -797,6 +891,19 @@
       const el = document.getElementById('feedback');
       el.textContent = msg;
       el.className   = 'feedback ' + type;
+    }
+
+    // ─────────────────────────────────────────────
+    // HOME NAVIGATION
+    // ─────────────────────────────────────────────
+    function confirmGoHome() {
+      document.getElementById('confirmOverlay').classList.add('active');
+    }
+    function closeConfirm() {
+      document.getElementById('confirmOverlay').classList.remove('active');
+    }
+    function goHome() {
+      window.location.href = '../index.html';
     }
   </script>
 </body>
